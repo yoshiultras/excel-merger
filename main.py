@@ -1,6 +1,7 @@
 import pandas as pd
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
+from openpyxl import load_workbook
 
 
 # Функция для обработки значений
@@ -111,7 +112,30 @@ class ExcelMergerApp:
             # print(merged_df)
 
             # Сохранение результата в новый файл
-            merged_df.to_excel("merged_output.xlsx", index=False)
+            output_file = "merged_output.xlsx"
+            merged_df.to_excel(output_file, index=False)
+
+            # Открытие файла для форматирования
+            wb = load_workbook(output_file)
+            ws = wb.active
+
+            # Автоматическая подгонка ширины столбцов
+            for column in ws.columns:
+                max_length = 0
+                column = [cell for cell in column]
+                for cell in column:
+                    try:
+                        if len(str(cell.value)) > max_length:
+                            max_length = len(cell.value)
+                    except:
+                        pass
+                adjusted_width = (max_length + 5)  # Добавляем немного отступа
+                ws.column_dimensions[column[0].column_letter].width = adjusted_width
+
+            # Сохранение изменений
+            wb.save(output_file)
+            wb.close()
+
             messagebox.showinfo("Успех", "Файлы успешно объединены в 'merged_output.xlsx'.")
 
         except KeyError as e:
