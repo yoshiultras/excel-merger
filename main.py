@@ -8,8 +8,12 @@ from openpyxl import load_workbook
 def process_data(series):
     return series.apply(
         lambda x: x.strip().lower() if isinstance(x, str) else str(x).strip().lower()).apply(
-        lambda x: [num.strip() for num in x.split(';') if num.strip() != '+7' and '_' not in num]
-        if isinstance(x, str) else [])
+        lambda x: [
+            num.strip().replace('8', '+7', 1) if num.strip().startswith('8') else num.strip()
+            for num in x.split(';') if num.strip() != '+7' and '_' not in num
+        ] if isinstance(x, str) else []
+    )
+
 
 
 def merge_excel(df1, df2, common_field1, common_field2):
@@ -103,7 +107,9 @@ class ExcelMergerApp:
             df1 = pd.read_excel(self.file1)
             df2 = pd.read_excel(self.file2)
             merged_df = merge_excel(df1, df2, common_field1, common_field2)
-
+            f1_rows = len(df1.index)
+            f2_rows = len(df2.index)
+            merged_rows = len(merged_df.index)
             # Код отладки
             # pd.set_option('display.max_rows', None)
             # pd.set_option('display.max_columns', None)
@@ -114,7 +120,6 @@ class ExcelMergerApp:
             # Сохранение результата в новый файл
             output_file = "merged_output.xlsx"
             merged_df.to_excel(output_file, index=False)
-
             # Открытие файла для форматирования
             wb = load_workbook(output_file)
             ws = wb.active
@@ -136,7 +141,10 @@ class ExcelMergerApp:
             wb.save(output_file)
             wb.close()
 
-            messagebox.showinfo("Успех", "Файлы успешно объединены в 'merged_output.xlsx'.")
+            messagebox.showinfo("Успех", "Файлы успешно объединены в 'merged_output.xlsx'.\n"
+                                         f"Получено данных: {merged_rows}\n"
+                                         f"Процент вхождения данных из первого файла: {merged_rows/f1_rows:.1%}\n"
+                                         f"Процент вхождения данных из второго файла: {merged_rows/f2_rows:.1%}")
 
         except KeyError as e:
             messagebox.showerror("Ошибка", f"Столбец '{e}' не найден в одном из файлов.")
@@ -148,6 +156,6 @@ class ExcelMergerApp:
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.geometry('520x420')
+    root.geometry('620x420')
     app = ExcelMergerApp(root)
     root.mainloop()
