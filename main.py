@@ -12,12 +12,15 @@ def process_data(series):
         lambda x: x.strip().lower() if isinstance(x, str) else str(x).strip().lower()
     ).apply(
         lambda x: [
-            num.strip().replace('8', '+7', 1).replace(' ', '').replace('(', '').replace(')', '').replace('-', '') if num.strip().startswith('8') else
-            "+7" + num.strip()[1:].replace(' ', '').replace('(', '').replace(')', '').replace('-', '') if num.strip().startswith('7') else num.strip().replace(' ', '').replace('(', '').replace(')', '').replace('-', '')
+            num.strip().replace('8', '+7', 1).replace(' ', '').replace('(', '').replace(')', '').replace('-',
+                                                                                                         '') if num.strip().startswith(
+                '8') else
+            "+7" + num.strip()[1:].replace(' ', '').replace('(', '').replace(')', '').replace('-',
+                                                                                              '') if num.strip().startswith(
+                '7') else num.strip().replace(' ', '').replace('(', '').replace(')', '').replace('-', '')
             for num in x.split(';') if len(num.strip()) > 5 and '_' not in num
         ] if isinstance(x, str) else []
     )
-
 
 
 def merge_excel(df1, df2, common_fields):
@@ -31,7 +34,8 @@ def merge_excel(df1, df2, common_fields):
         temp_df2 = df2.explode(common_field2)
 
         # Обработка пустых данных
-        temp_df1[common_field1] = temp_df1[common_field1].apply(lambda x: ' ' if x == [] or x == 'nan' or str(x) is None else x)
+        temp_df1[common_field1] = temp_df1[common_field1].apply(
+            lambda x: ' ' if x == [] or x == 'nan' or str(x) is None else x)
         temp_df1.fillna(' ', inplace=True)
 
         pd.set_option('display.max_columns', 1000)  # or 1000
@@ -72,7 +76,8 @@ class ExcelMergerApp:
         self.pair_frame = tk.Frame(root)
         self.pair_frame.pack(pady=10)
 
-        self.add_pair_button = tk.Button(root, text="Добавить пару столбцов для объединения", command=self.add_column_pair)
+        self.add_pair_button = tk.Button(root, text="Добавить пару столбцов для объединения",
+                                         command=self.add_column_pair)
         self.add_pair_button.pack(pady=5)
 
         self.btn_merge = tk.Button(root, text="Объединить файлы", command=self.merge)
@@ -157,7 +162,7 @@ class ExcelMergerApp:
                         for col in merged_df.columns:
                             merged_df[col] = merged_df[col].apply(lambda x: ', '.join(x) if isinstance(x, list) else x)
 
-                        # merged_df = merged_df.drop_duplicates(subset=[common_field1])  # Удаление дубликатов
+                        merged_df = merged_df.drop_duplicates(subset=[common_field1])  # Удаление дубликатов
                 except _tkinter.TclError as e:
                     continue
             f1_rows = len(df1.index)
@@ -190,16 +195,18 @@ class ExcelMergerApp:
 
             messagebox.showinfo("Успех", "Файлы успешно объединены в 'merged_output.xlsx'.\n"
                                          f"Получено данных: {merged_rows}\n"
-                                         f"Процент вхождения данных из первого файла: {merged_rows/f1_rows:.1%}\n"
-                                         f"Процент вхождения данных из второго файла: {merged_rows/f2_rows:.1%}")
+                                         f"Процент вхождения данных из первого файла: {merged_rows / f1_rows:.1%}\n"
+                                         f"Процент вхождения данных из второго файла: {merged_rows / f2_rows:.1%}")
 
         except KeyError as e:
             messagebox.showerror("Ошибка", f"Столбец '{e}' не найден в одном из файлов.")
         except PermissionError as e:
-            messagebox.showerror("Ошибка", f"К файлу '{e.filename}' запрещен доступ. Закройте файл или запустите программу с правами администратора.")
+            messagebox.showerror("Ошибка",
+                                 f"К файлу '{e.filename}' запрещен доступ. Закройте файл или запустите программу с правами администратора.")
         # except Exception as e:
         #     messagebox.showerror("Ошибка", e)
         #     print(e)
+
 
 if __name__ == "__main__":
     root = tk.Tk()
