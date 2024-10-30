@@ -9,12 +9,15 @@ from openpyxl import load_workbook
 # Функция для обработки значений
 def process_data(series):
     return series.apply(
-        lambda x: x.strip().lower() if isinstance(x, str) else str(x).strip().lower()).apply(
+        lambda x: x.strip().lower() if isinstance(x, str) else str(x).strip().lower()
+    ).apply(
         lambda x: [
-            num.strip().replace('8', '+7', 1) if num.strip().startswith('8') else num.strip()
-            for num in x.split(';') if num.strip() != '+7' and '_' not in num
+            num.strip().replace('8', '+7', 1).replace(' ', '').replace('(', '').replace(')', '').replace('-', '') if num.strip().startswith('8') else
+            "+7" + num.strip()[1:].replace(' ', '').replace('(', '').replace(')', '').replace('-', '') if num.strip().startswith('7') else num.strip().replace(' ', '').replace('(', '').replace(')', '').replace('-', '')
+            for num in x.split(';') if len(num.strip()) > 5 and '_' not in num
         ] if isinstance(x, str) else []
     )
+
 
 
 def merge_excel(df1, df2, common_fields):
@@ -31,6 +34,11 @@ def merge_excel(df1, df2, common_fields):
         temp_df1[common_field1] = temp_df1[common_field1].apply(lambda x: ' ' if x == [] or x == 'nan' or str(x) is None else x)
         temp_df1.fillna(' ', inplace=True)
 
+        pd.set_option('display.max_columns', 1000)  # or 1000
+        pd.set_option('display.max_rows', 1000)  # or 1000
+        pd.set_option('display.max_colwidth', 199)  # or 199
+        print(temp_df1)
+        print(temp_df2)
         # Объединение данных
         merged_df = pd.merge(temp_df1, temp_df2, left_on=common_field1, right_on=common_field2)
 
@@ -149,7 +157,7 @@ class ExcelMergerApp:
                         for col in merged_df.columns:
                             merged_df[col] = merged_df[col].apply(lambda x: ', '.join(x) if isinstance(x, list) else x)
 
-                        merged_df = merged_df.drop_duplicates(subset=[common_field1])  # Удаление дубликатов
+                        # merged_df = merged_df.drop_duplicates(subset=[common_field1])  # Удаление дубликатов
                 except _tkinter.TclError as e:
                     continue
             f1_rows = len(df1.index)
